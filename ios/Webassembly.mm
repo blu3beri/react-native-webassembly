@@ -1,19 +1,27 @@
+#import "turboModuleUtility.h"
+
 #import "Webassembly.h"
-#import "react-native-webassembly.h"
+#import <React/RCTBridge+Private.h>
+#import <jsi/jsi.h>
 
 @implementation Webassembly
 
 RCT_EXPORT_MODULE()
 
-// Example method for C++
-// See the implementation of the example module in the `cpp` folder
-RCT_EXPORT_METHOD(multiply:(nonnull NSNumber*)a withB:(nonnull NSNumber*)b
-                  withResolver:(RCTPromiseResolveBlock)resolve
-                  withReject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
 {
-    NSNumber *result = @(example::multiply([a floatValue], [b floatValue]));
-
-    resolve(result);
+    RCTBridge* bridge = [RCTBridge currentBridge];
+    RCTCxxBridge* cxxBridge = (RCTCxxBridge*)bridge;
+    if (cxxBridge == nil) {
+        return @false;
+    }
+    
+    jsi::Runtime* jsiRuntime = (jsi::Runtime*) cxxBridge.runtime;
+    if (jsiRuntime == nil) {
+        return @false;
+    }
+    turboModuleUtility::registerTurboModule(*jsiRuntime);
+    return @true;
 }
 
 @end
